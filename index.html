@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>COSCUP 2018</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="COSCUP 2018">
+  <link rel="apple-touch-icon" href="coscup.jpg">
+  <link rel="apple-touch-icon" sizes="152x152" href="coscup.jpg">
+  <link rel="apple-touch-icon" sizes="180x180" href="coscup.jpg">
+  <link rel="apple-touch-icon" sizes="167x167" href="coscup.jpg">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
+  <style>
+    body {
+      background: white;
+      font-size: 10pt;
+      font-family: "Helvetica Neue", Helvetica, sans-serif;
+      line-height: 1.2;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header h1 {
+      font-size: 16pt;
+      font-weight: bold;
+      color: hsl(0, 0%, 30%);
+      text-align: center;
+      margin: 10pt 0;
+    }
+
+    footer {
+      color: hsl(0, 0%, 60%);
+      font-size: 9pt;
+      padding: 20pt 0 40pt 0;
+      text-align: center;
+    }
+
+    footer a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    nav {
+      display: block;
+      text-align: center;
+      margin: 20pt 0;
+    }
+
+    nav a {
+      background: hsl(165, 80%, 40%);
+      padding: 5pt 7pt;
+      color: white;
+      border-radius: 2pt;
+      border: solid 1px hsl(165, 80%, 35%);
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+      text-decoration: none;
+      filter: grayscale(100%);
+      cursor: pointer;
+    }
+
+    nav a.active {
+      filter: grayscale(0%);
+    }
+
+    nav a + a {
+      margin-left: 10pt;
+    }
+
+    .track-title {
+      font-size: 12pt;
+      font-weight: bold;
+      padding: 8pt 0;
+      background: linear-gradient(137deg, hsl(165, 50%, 32%) 0%, hsl(165, 60%, 33%) 51%, hsl(165, 50%, 28%) 100%);
+      text-align: center;
+      color: white;
+      margin-top: 20pt;
+    }
+
+    .talk {
+      padding: 8pt;
+    }
+
+    .talk:nth-child(even) {
+      background: hsl(0, 0%, 94%);
+    }
+
+    .talk:nth-child(odd) {
+      background: hsl(0, 0%, 90%);
+    }
+
+    .talk-time {
+      color: hsl(165, 50%, 40%);
+      font-weight: bold;
+    }
+
+    .talk-title {
+      font-weight: bold;
+    }
+
+    .talk-speakers {
+      color: hsl(0, 0%, 40%);
+    }
+
+    .talk-intro {
+      line-height: 1.5;
+      font-size: 9pt;
+      margin: 2pt 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .talk-intro.active {
+      display: block;
+    }
+
+    .talk-lang, .talk-level {
+      background: hsl(165, 30%, 70%);
+      color: white;
+      padding: 1pt 3pt;
+      font-size: 8pt;
+      border-radius: 2pt;
+      display: inline-block;
+      vertical-align: bottom;
+    }
+
+    .talk.expired {
+      opacity: 0.3;
+      filter: grayscale(100%);
+      /*
+      padding: 2pt 8pt;
+      */
+    }
+
+    /*
+    .talk.expired .talk-intro {
+      display: none;
+    }
+    */
+
+    .talk.starred {
+      border-right: 6px solid hsl(45, 100%, 60%);
+    }
+
+    .talk.ongoing {
+      border-left: 6px solid hsl(5, 100%, 85%);
+    }
+      
+
+    /* the next talk */
+    .talk.next {
+      border-left: 6px solid hsl(165, 90%, 70%);
+    }
+
+    .talks.nextOnly .talk:not(.ongoing):not(.next) {
+      display: none;
+    }
+
+    .talk.swipe-x {
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>COSCUP 2018 ▸ 下一場聽什麼？</h1>
+</header>
+
+<div id="agenda">
+  <nav>
+    <a href="#20180811" v-bind:class="{ active: (today == '20180811') }">08/11 (六)</a>
+    <a href="#20180812" v-bind:class="{ active: (today == '20180812') }">08/12 (日)</a>
+    <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找下一場</a>
+    <a style="font-weight:bold" onclick="reloadPrograms();">&#8635;</a>
+  </nav>
+
+  <div class="track" v-for="track in tracks" v-if="!nextOnly || track.talks.filter(t => t.ongoing || t.next).length">
+    <h2 class="track-title">{{ track.room }} – {{ track.title }}</h2>
+    <div class="talks" v-bind:class="{ nextOnly: nextOnly }">
+      <div class="talk" v-for="(talk, index) in track.talks"
+        v-bind:class="{ expired: talk.expired, ongoing: talk.ongoing, next: talk.next,
+          starred: (starreds.indexOf(talk.talk) >= 0) }"
+        v-on:click.stop="toggleTalkIntro"
+        v-swipeleft.stop="toggleTalkStarred"
+        v-bind:data-talk-id="talk.talk">
+        <span class="talk-time">{{ talk.beginMoment.format('hh:mm') }} – {{ talk.endMoment.format('hh:mm') }}</span>
+        <span class="talk-lang" v-if="talk.language">{{ talk.language }}</span>
+        <span class="talk-level" v-if="talk.difficulty">{{ talk.difficulty }}</span>
+        <div style="margin:3pt 0;"></div>
+        <span class="talk-title">{{ talk.title }}</span> <span class="talk-speakers">| {{ talk.speakers.join(', ') }}</span>
+        <div class="talk-intro">{{ talk.intro }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <a href="https://github.com/dannvix" target="_blank">Star this project on GitHub ⭐️</a>
+</footer>
+
+<script type="text/babel">
+  Vue.directive('swipeleft', {
+    bind: function(el, binding, vnode) {
+      let startX, originLeft;
+      el.addEventListener('touchstart', evt => {
+        el.classList.add('swipe-x');
+        startX = evt.changedTouches[0].pageX;
+        originLeft = el.style.left || null;
+      }, false);
+      el.addEventListener('touchmove', evt => {
+        const offsetX = (evt.changedTouches[0].pageX - startX);
+        if (offsetX >= -30) {
+          el.style.left = '0';
+        }
+        else {
+          el.style.left = `${Math.max(offsetX, -120)}px`;
+          evt.preventDefault();
+        }
+        if (offsetX <= -60) {
+          el.classList.add('starred');
+        }
+      });
+      el.addEventListener('touchend', evt => {
+        el.classList.remove('swipe-x');
+        el.style.left = originLeft;
+
+        const offsetX = (evt.changedTouches[0].pageX - startX);
+        if (offsetX <= -60) {
+          binding.value(evt);
+        }
+      });
+    },
+  });
+
+  const agendaView = new Vue({
+    el: document.getElementById('agenda'),
+    data: {
+      today: moment().format('YYYYMMDD'),
+      tracks: [],
+      nextOnly: false,
+      starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
+    },
+    methods: {
+      updateTracks: function(today, tracks) {
+        this.today = today;
+        this.tracks = tracks;
+      },
+
+      toggleTalkIntro: function(evt) {
+        if (evt) {
+          const introElem = evt.currentTarget.querySelector('.talk-intro');
+          introElem.classList.toggle('active');
+        }
+      },
+
+      toggleNextOnly: function() {
+        this.nextOnly = !this.nextOnly;
+      },
+
+      toggleTalkStarred: function(evt) {
+        if (evt) {
+          const talkId = evt.currentTarget.getAttribute('data-talk-id');
+          if (talkId) {
+            const index = this.starreds.indexOf(talkId);
+            if (index >= 0) {
+              this.starreds.splice(index, 1);
+              console.log(`removed ${talkId}`);
+            }
+            else {
+              this.starreds.push(talkId);
+              localStorage.setItem('starreds', JSON.stringify(this.starreds));
+              console.log(`added ${talkId}`);
+            }
+          }
+        }
+      },
+    },
+  });
+
+  function updateTracks(programs) {
+    let today = moment().format('YYYYMMDD');
+    if (window.location.hash) {
+      const timestamp = window.location.hash.substring(1);
+      today = moment(timestamp).format('YYYYMMDD');
+    }
+
+    // const now = moment('2018-08-11T11:05:00+08:00');
+    const now = moment();
+
+    // TODO: cache the programs for offline access (PWA?)
+    const tracksWithTalks = Object.values(programs.tracks).map(track => {
+      const trackId = track.track;
+
+      let firstFuture = true;
+      const talks = Object.values(programs.talks)
+        .filter(t => t.track == trackId)
+        .map(t => ({
+          ...t,
+          beginMoment: moment(t.begin),
+          endMoment: moment(t.end),
+        }))
+        .filter(t => t.beginMoment.format('YYYYMMDD') == today)
+        .map((t, index, talks) => {
+          let isNext = false;
+          if ((t.beginMoment > now) && firstFuture) {
+            firstFuture = false;
+            isNext = true;
+          }
+          return {
+            ...t,
+            expired: (t.endMoment <= now),
+            ongoing: (t.beginMoment <= now && t.endMoment >= now),
+            next: isNext,
+          };
+        })
+        .sort((a, b) => (a.beginMoment - b.beginMoment));
+      return { ...track, talks };
+    }).filter(t => t.talks.length);
+    agendaView.updateTracks(today, tracksWithTalks);
+  }
+
+  const programsUri = 'https://api2018.coscup.org/zh_TW/programs.json';
+
+  function reloadPrograms() {
+    fetch(programsUri).then(r => r.json()).then(programs => {
+      localStorage.setItem('programs', JSON.stringify(programs));
+      window.location.reload();
+    });
+  }
+
+  const cachedPrograms = localStorage.getItem('programs');
+  if (cachedPrograms) {
+    const programs = JSON.parse(cachedPrograms);
+    window.programs = programs; // for debugging
+    updateTracks(programs);
+    window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
+    setInterval(updateTracks.bind(null, programs), 60000); 
+  }
+  else {
+    fetch(programsUri).then(r => r.json()).then(programs => {
+      localStorage.setItem('programs', JSON.stringify(programs));
+      window.programs = programs; // for debugging
+      updateTracks(programs);
+      window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
+      setInterval(updateTracks.bind(null, programs), 60000); 
+    });
+  }
+</script>
+</body>
+</html>
