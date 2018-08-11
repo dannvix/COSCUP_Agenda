@@ -119,16 +119,8 @@
       text-overflow: ellipsis;
     }
 
-    .talk.display-details .talk-intro {
-      display: block;
-    }
-
     .talk-speaker-intros {
       display: none;
-    }
-
-    .talk.display-details .talk-speaker-intros {
-      display: block;
     }
 
     .talk-speaker-intro {
@@ -149,19 +141,29 @@
       text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     }
 
-    .talk.expired {
-      opacity: 0.3;
-      filter: grayscale(100%);
-      /*
-      padding: 2pt 8pt;
-      */
+    .talk-separator {
+      margin: 3pt 0;
     }
 
-    /*
+    .talk.expired {
+      opacity: 0.2;
+      filter: grayscale(100%);
+      padding: 3pt 8pt;
+    }
     .talk.expired .talk-intro {
       display: none;
     }
-    */
+    .talk.expired .talk-separator {
+      margin: 0;
+    }
+
+    .talk.display-details .talk-intro {
+      display: block;
+    }
+    .talk.display-details .talk-speaker-intros {
+      display: block;
+    }
+
 
     .talk.starred {
       border-right: 6px solid hsl(45, 100%, 60%);
@@ -212,7 +214,7 @@
         <span class="talk-time">{{ talk.beginMoment.format('hh:mm') }} – {{ talk.endMoment.format('hh:mm') }}</span>
         <span class="talk-lang" v-if="talk.language">{{ talk.language }}</span>
         <span class="talk-level" v-if="talk.difficulty">{{ talk.difficulty }}</span>
-        <div style="margin:3pt 0;"></div>
+        <div class="talk-separator"></div>
         <span class="talk-title">{{ talk.title }}</span> <span class="talk-speakers">| {{ talk.speakers.join(', ') }}</span>
         <div class="talk-intro" v-if="talk.intro">
           {{ talk.intro }}
@@ -234,23 +236,26 @@
 <script type="text/babel">
   Vue.directive('swipeleft', {
     bind: function(el, binding, vnode) {
-      let startX, originLeft;
+      let startX, startPageTop, originLeft, starredYet;
       el.addEventListener('touchstart', evt => {
         el.classList.add('swipe-x');
         startX = evt.changedTouches[0].pageX;
+        startPageTop = window.scrollY;
         originLeft = el.style.left || null;
+        starredYet = el.classList.contains('starred');
       }, false);
       el.addEventListener('touchmove', evt => {
         const offsetX = (evt.changedTouches[0].pageX - startX);
-        if (offsetX >= -30) {
+        const diffPageTop = Math.abs(window.scrollY - startPageTop);
+        if (offsetX >= -40 || diffPageTop > 0) {
           el.style.left = '0';
         }
         else {
           el.style.left = `${Math.max(offsetX, -120)}px`;
           evt.preventDefault();
         }
-        if (offsetX <= -60) {
-          el.classList.add('starred');
+        if (offsetX <= -80 && diffPageTop <= 0) {
+          el.classList[starredYet ? 'remove' : 'add']('starred');
         }
       });
       el.addEventListener('touchend', evt => {
@@ -258,7 +263,8 @@
         el.style.left = originLeft;
 
         const offsetX = (evt.changedTouches[0].pageX - startX);
-        if (offsetX <= -60) {
+        const diffPageTop = Math.abs(window.scrollY - startPageTop);
+        if (offsetX <= -80 && diffPageTop <= 60) {
           binding.value(evt);
         }
       });
@@ -298,6 +304,7 @@
             const index = this.starreds.indexOf(talkId);
             if (index >= 0) {
               this.starreds.splice(index, 1);
+              localStorage.setItem('starreds', JSON.stringify(this.starreds));
               console.log(`removed ${talkId}`);
             }
             else {
@@ -318,7 +325,7 @@
       today = moment(timestamp).format('YYYYMMDD');
     }
 
-    // const now = moment('2018-08-11T11:05:00+08:00');
+    // const now = moment('2018-08-11T15:05:00+08:00');
     const now = moment();
 
     // TODO: cache the programs for offline access (PWA?)
