@@ -17,6 +17,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
+  <link rel="manifest" type="application/manifest+json" href="manifest.webmanifest">
   <style>
     body {
       background: white;
@@ -249,7 +250,7 @@
     <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找</a>
     <a v-on:click.prevent="toggleStarredOnly" v-bind:class="{ active: starredOnly }">星</a>
     <a v-on:click.prevent="toggleTimeMachine" v-bind:class="{ active: timeMachine }">跳</a>
-    <a style="font-weight:bold" onclick="reloadPrograms();">&#8635;</a>
+    <a style="font-weight:bold" onclick="reloadPrograms(true);">&#8635;</a>
   </nav>
 
   <div class="time-machine" v-if="timeMachine">
@@ -496,33 +497,43 @@
 
   const programsUri = 'https://api2019.coscup.org/programs.json';
 
-  function reloadPrograms() {
-    fetch(programsUri).then(r => r.json()).then(programs => {
+  let hashChangeEvt = undefined;
+  let refreshInterval = undefined;
+  function onProgramsUpdated(programs) {
+    window.programs = programs;
+    updateTracks(programs);
+    if (hashChangeEvt) window.removeEventListener('hashchange', hashChangeEvt);
+    hashChangeEvt = window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(updateTracks.bind(null, programs), 60000);
+  }
+
+  function reloadPrograms(forced) {
+    const uri = programsUri + (forced ? ('?' + (new Date().getTime())) : '');
+    fetch(uri).then(r => r.json()).then(programs => {
       localStorage.setItem('programs', JSON.stringify(programs));
-      window.location.reload();
+      onProgramsUpdated(programs);
     });
   }
 
   const cachedPrograms = localStorage.getItem('programs');
   if (cachedPrograms) {
     const programs = JSON.parse(cachedPrograms);
-    window.programs = programs;
-    updateTracks(programs);
-    window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
-    setInterval(updateTracks.bind(null, programs), 60000); 
+    onProgramsUpdated(programs);
   }
   else {
-    fetch(programsUri).then(r => r.json()).then(programs => {
-      localStorage.setItem('programs', JSON.stringify(programs));
-      window.programs = programs;
-      updateTracks(programs);
-      window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
-      setInterval(updateTracks.bind(null, programs), 60000); 
-    });
+    reloadPrograms();
   }
 
   if (!window.location.hash) {
     window.location.hash = '#20190817';
+  }
+
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.register('service_worker.js')
+      .then(reg => {
+        console.log(reg.scope);
+      });
   }
 </script>
 </body>
