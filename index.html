@@ -2,12 +2,12 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>COSCUP 2018</title>
+  <title>COSCUP 2019</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="COSCUP 2018">
+  <meta name="apple-mobile-web-app-title" content="COSCUP 2019">
   <link rel="apple-touch-icon" href="coscup.jpg">
   <link rel="apple-touch-icon" sizes="152x152" href="coscup.jpg">
   <link rel="apple-touch-icon" sizes="180x180" href="coscup.jpg">
@@ -15,7 +15,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.css">
   <style>
     body {
@@ -25,6 +25,8 @@
       line-height: 1.3;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
+      max-width: 500pt;
+      margin: 0 auto;
     }
 
     header h1 {
@@ -58,9 +60,11 @@
       padding: 5pt 7pt;
       color: white;
       border-radius: 2pt;
-      border: solid 1px hsl(165, 80%, 35%);
-      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+      /*
+      border: solid 1pt hsl(165, 80%, 35%);
+      text-shadow: 0 -1pt 0 rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 1pt 0 rgba(255, 255, 255, 0.4), 0 1pt 1pt rgba(0, 0, 0, 0.2);
+      */
       text-decoration: none;
       filter: grayscale(100%);
       cursor: pointer;
@@ -71,7 +75,7 @@
     }
 
     nav a + a {
-      margin-left: 10pt;
+      margin-left: 5pt;
     }
 
     .track-title {
@@ -89,11 +93,11 @@
     }
 
     .talk:nth-child(even) {
-      background: hsl(0, 0%, 94%);
+      background: hsl(0, 0%, 96%);
     }
 
     .talk:nth-child(odd) {
-      background: hsl(0, 0%, 90%);
+      background: hsl(0, 0%, 92%);
     }
 
     .talk-time {
@@ -106,7 +110,8 @@
     }
 
     .talk-speakers {
-      color: hsl(0, 0%, 40%);
+      color: hsl(0, 0%, 50%);
+      display: inline-block;
     }
 
     .talk-intro {
@@ -130,31 +135,36 @@
       padding: 6pt 0;
     }
 
-    .talk-lang, .talk-level {
-      background: hsl(165, 30%, 70%);
+    .talk-type, .talk-tag {
       color: white;
       padding: 1pt 3pt;
       font-size: 8pt;
       border-radius: 2pt;
       display: inline-block;
       vertical-align: text-bottom;
+      /*
       text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      */
     }
 
-    .talk-separator {
-      margin: 3pt 0;
+    .talk-type {
+      background: hsl(165, 30%, 70%);
+    }
+
+    .talk-tag {
+      background: hsl(210, 70%, 77%);
+    }
+    .talk-tag + .talk-tag {
+      margin-left: 3pt;
     }
 
     .talk.expired {
-      opacity: 0.2;
+      opacity: 0.3;
       filter: grayscale(100%);
       padding: 3pt 8pt;
     }
     .talk.expired .talk-intro {
       display: none;
-    }
-    .talk.expired .talk-separator {
-      margin: 0;
     }
 
     .talk.display-details .talk-intro {
@@ -166,62 +176,118 @@
 
 
     .talk.starred {
-      border-right: 6px solid hsl(45, 100%, 60%);
+      border-right: 6px solid hsl(45, 100%, 50%);
     }
 
     .talk.ongoing {
-      border-left: 6px solid hsl(5, 100%, 85%);
+      border-left: 6px solid hsl(5, 100%, 80%);
     }
       
 
     /* the next talk */
     .talk.next {
-      border-left: 6px solid hsl(165, 90%, 70%);
+      border-left: 6px solid hsl(165, 90%, 60%);
     }
 
     .talks.nextOnly .talk:not(.ongoing):not(.next) {
       display: none;
     }
 
+    .talks.starredOnly .talk:not(.starred) {
+      display: none;
+    }
+
     .talk.swipe-x {
       position: relative;
+    }
+
+    .time-machine {
+      padding: 8pt;
+      text-align: center;
+      font-weight: bold;
+      color: hsl(210, 80%, 30%);
+    }
+    .time-machine input[type=range] {
+      -webkit-appearance: none;
+      width: 90%;
+      margin-top: 8pt;
+    }
+    .time-machine input[type=range]:focus {
+      outline: none;
+    }
+    .time-machine input[type=range]::-webkit-slider-runnable-track {
+      height: 8pt;
+      background: hsl(210, 50%, 85%);
+      border-radius: 4pt;
+      border: 0;
+    }
+    .time-machine input[type=range]::-webkit-slider-thumb {
+      width: 20pt;
+      height: 20pt;
+      border-radius: 10pt;
+      background: hsl(210, 80%, 60%);
+      -webkit-appearance: none;
+      margin-top: -5pt;
+      /*
+      border: solid 1pt hsl(210, 80%, 50%);
+      box-shadow: inset 0 1pt 0 rgba(255, 255, 255, 0.4), 0 1pt 1pt rgba(0, 0, 0, 0.2);
+      */
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>COSCUP 2018 ▸ 下一場聽什麼？</h1>
+  <h1>COSCUP 2019 ▸ 下一場聽什麼？</h1>
 </header>
 
 <div id="agenda">
   <nav>
-    <a href="#20180811" v-bind:class="{ active: (today == '20180811') }">08/11 (六)</a>
-    <a href="#20180812" v-bind:class="{ active: (today == '20180812') }">08/12 (日)</a>
-    <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找下一場</a>
+    <a href="#20190817" v-bind:class="{ active: (today == '20190817') }">D1</a>
+    <a href="#20190818" v-bind:class="{ active: (today == '20190818') }">D2</a>
+    <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找</a>
+    <a v-on:click.prevent="toggleStarredOnly" v-bind:class="{ active: starredOnly }">星</a>
+    <a v-on:click.prevent="toggleTimeMachine" v-bind:class="{ active: timeMachine }">跳</a>
     <a style="font-weight:bold" onclick="reloadPrograms();">&#8635;</a>
   </nav>
 
-  <div class="track" v-for="track in tracks" v-if="!nextOnly || track.talks.filter(t => t.ongoing || t.next).length">
-    <h2 class="track-title">{{ track.room }} – {{ track.title }}</h2>
-    <div class="talks" v-bind:class="{ nextOnly: nextOnly }">
+  <div class="time-machine" v-if="timeMachine">
+    時光機 ▸ {{ timeMachineTime.format('MM 月 DD 日 HH 時 mm 分') }}
+    <input type="range" min="510" max="1200" v-model="timeMachineValue"
+      onchange="timeMachineJump();" oninput="timeMachineJumpThrottled();">
+  </div>
+
+  <div class="track" v-for="track in tracks"
+    v-if="(!nextOnly && !starredOnly) || (nextOnly && track.hasNextOrOngoing) || (starredOnly && track.talks.filter(t => agendaView.starreds.indexOf(t.id) >= 0).length)">
+    <h2 class="track-title">{{ track.roomName }}</h2>
+    <div class="talks" v-bind:class="{ nextOnly: nextOnly, starredOnly: starredOnly }">
       <div class="talk" v-for="(talk, index) in track.talks"
-        v-bind:class="{ expired: talk.expired, ongoing: talk.ongoing, next: talk.next,
-          starred: (starreds.indexOf(talk.talk) >= 0) }"
+        v-bind:class="{ expired: talk.isExpired, ongoing: talk.isOngoing, next: talk.isNext,
+          starred: (starreds.indexOf(talk.id) >= 0) }"
+        v-on:click="console.dir(talk);/*for debugging*/"
         v-on:click.stop="toggleTalkDetails"
         v-swipeleft.stop="toggleTalkStarred"
-        v-bind:data-talk-id="talk.talk">
-        <span class="talk-time">{{ talk.beginMoment.format('hh:mm') }} – {{ talk.endMoment.format('hh:mm') }}</span>
-        <span class="talk-lang" v-if="talk.language">{{ talk.language }}</span>
-        <span class="talk-level" v-if="talk.difficulty">{{ talk.difficulty }}</span>
-        <div class="talk-separator"></div>
-        <span class="talk-title">{{ talk.title }}</span> <span class="talk-speakers">| {{ talk.speakers.join(', ') }}</span>
-        <div class="talk-intro" v-if="talk.intro">
-          {{ talk.intro }}
+        v-bind:data-talk-id="talk.id">
+        <div style="white-space:nowrap;overflow-x:hidden">
+          <span class="talk-time">{{ talk.beginMoment.format('HH:mm') }} – {{ talk.endMoment.format('HH:mm') }}</span>
+          <span class="talk-type" v-if="talk.type.length">{{ talk.type[0] }}</span>
+          <span class="talk-tags" v-if="talk.tags.length">
+            <span class="talk-tag" v-for="tag in talk.tags">{{ tag }}</span>
+          </span>
+        </div>
+        <div style="margin:3pt 0;" v-if="!talk.expire"></div>
+        <span class="talk-title">{{ talk.zh.title }}</span>
+        <span class="talk-speakers" v-if="talk.speakers.length">
+          ({{ talk.speakers.map(speakerId => speakersById[speakerId]).map(s => s.zh.name).join(', ') }})
+        </span>
+        <div class="talk-intro" v-if="talk.zh.description">
+          {{ talk.zh.description }}
         </div>
         <div class="talk-speaker-intros">
-          <div class="talk-speaker-intro" v-for="speaker in talk.speakers.map(name => speakerIntros[name]).filter(s => s)" v-if="speaker.intro">
-            {{ speaker.name }}  ▸ {{ speaker.intro }}
+          <div class="talk-speaker-intro"
+            v-for="speaker in talk.speakers.map(speakerId => speakersById[speakerId]).filter(s => s)"
+            v-if="speaker.zh.bio">
+            {{ speaker.zh.name }}  ▸ {{ speaker.zh.bio }}
           </div>
         </div>
       </div>
@@ -277,14 +343,21 @@
       today: moment().format('YYYYMMDD'),
       tracks: [],
       nextOnly: false,
+      starredOnly: false,
+      timeMachine: false,
+      timeMachineValue: 0,
       starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
-      speakerIntros: {},
+    },
+    computed: {
+      timeMachineTime: function() {
+        return moment(this.today).startOf('day').add(this.timeMachineValue, 'minutes');
+      },
     },
     methods: {
-      updateTracks: function(today, tracks, speakerIntros) {
+      updateTracks: function(today, tracks, speakersById) {
         this.today = today;
         this.tracks = tracks;
-        this.speakerIntros = speakerIntros;
+        this.speakersById = speakersById;
       },
 
       toggleTalkDetails: function(evt) {
@@ -295,6 +368,18 @@
 
       toggleNextOnly: function() {
         this.nextOnly = !this.nextOnly;
+        if (this.nextOnly) this.starredOnly = false;
+      },
+
+      toggleStarredOnly: function() {
+        this.starredOnly = !this.starredOnly;
+        if (this.starredOnly) this.nextOnly = false;
+      },
+
+      toggleTimeMachine: function() {
+        this.timeMachine = !this.timeMachine;
+        this.timeMachineValue = this.timeMachineValue || moment().diff(moment().startOf('day'), 'minutes');
+        this.timeMachine ? timeMachineJump() : timeMachineStop();
       },
 
       toggleTalkStarred: function(evt) {
@@ -318,27 +403,46 @@
     },
   });
 
-  function updateTracks(programs) {
+  // this should be put into agendaView ?
+  function updateTracks(programs, now) {
     let today = moment().format('YYYYMMDD');
     if (window.location.hash) {
       const timestamp = window.location.hash.substring(1);
       today = moment(timestamp).format('YYYYMMDD');
     }
 
-    // const now = moment('2018-08-11T15:05:00+08:00');
-    const now = moment();
+    if (now === undefined) {
+      now = moment();
+      if (now.format('YYYYMMDD') != today) {
+        now = moment(0);
+      }
+    }
 
-    // TODO: cache the programs for offline access (PWA?)
-    const tracksWithTalks = Object.values(programs.tracks).map(track => {
-      const trackId = track.track;
+    const tracksWithTalks = programs.rooms.map(room => {
+      const roomId = room.id;
+
+      let priorityTags = [
+        'mandarin', 'english', 'taiwanese', 'japanese', // langauges
+        'beginner', 'skilled', 'advanced', 'workshop', // levels
+      ];
+
+      let allTags = programs.tags.filter(tag => tag.id.trim()); // tags contain a `" "` element...
+      allTags = allTags.filter(tag => priorityTags.indexOf(tag.id) >= 0).concat(
+        allTags.filter(tag => priorityTags.indexOf(tag.id) < 0))
 
       let firstFuture = true;
-      const talks = Object.values(programs.talks)
-        .filter(t => t.track == trackId)
+      const talks = programs.sessions
+        .filter(t => t.room == roomId)
         .map(t => ({
           ...t,
-          beginMoment: moment(t.begin),
+          beginMoment: moment(t.start),
           endMoment: moment(t.end),
+          type: programs.session_types
+            .filter(type => type.id == t.type)
+            .map(type => type.zh.name),
+          tags: allTags
+            .filter(tag => t.tags.indexOf(tag.id) >= 0)
+            .map(tag => tag.zh.name.trim()),
         }))
         .filter(t => t.beginMoment.format('YYYYMMDD') == today)
         .map((t, index, talks) => {
@@ -349,18 +453,47 @@
           }
           return {
             ...t,
-            expired: (t.endMoment <= now),
-            ongoing: (t.beginMoment <= now && t.endMoment >= now),
-            next: isNext,
+            isExpired: (t.endMoment < now),
+            isOngoing: (t.beginMoment <= now && t.endMoment >= now),
+            isNext: isNext,
           };
         })
         .sort((a, b) => (a.beginMoment - b.beginMoment));
-      return { ...track, talks };
+      return {
+        roomName: room.zh.name,
+        talks,
+        hasNextOrOngoing: (talks.filter(t => t.isOngoing || t.isNext).length > 0),
+      };
     }).filter(t => t.talks.length);
-    agendaView.updateTracks(today, tracksWithTalks, programs.speakers);
+
+    let speakersById = {};
+    programs.speakers.forEach(speaker => {
+      speakersById[speaker.id] = speaker;
+    });
+
+    window.speakersById = speakersById;
+    agendaView.updateTracks(today, tracksWithTalks, speakersById);
   }
 
-  const programsUri = 'https://api2018.coscup.org/zh_TW/programs.json';
+  let tmTimer = undefined;
+  function timeMachineJumpThrottled() {
+    if (!tmTimer) {
+      tmTimer = setTimeout(function() {
+        timeMachineJump();
+        tmTimer = undefined;
+      }, 100);
+    }
+  }
+
+  function timeMachineJump() {
+    updateTracks(window.programs, agendaView.timeMachineTime);
+  }
+
+  function timeMachineStop() {
+    updateTracks(window.programs);
+  }
+
+  const programsUri = 'https://api2019.coscup.org/programs.json';
 
   function reloadPrograms() {
     fetch(programsUri).then(r => r.json()).then(programs => {
@@ -372,7 +505,7 @@
   const cachedPrograms = localStorage.getItem('programs');
   if (cachedPrograms) {
     const programs = JSON.parse(cachedPrograms);
-    window.programs = programs; // for debugging
+    window.programs = programs;
     updateTracks(programs);
     window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
     setInterval(updateTracks.bind(null, programs), 60000); 
@@ -380,7 +513,7 @@
   else {
     fetch(programsUri).then(r => r.json()).then(programs => {
       localStorage.setItem('programs', JSON.stringify(programs));
-      window.programs = programs; // for debugging
+      window.programs = programs;
       updateTracks(programs);
       window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
       setInterval(updateTracks.bind(null, programs), 60000); 
