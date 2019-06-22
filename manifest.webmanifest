@@ -2,12 +2,12 @@
   "name": "COSCUP 2019 下一場聽什麼？",
   "short_name": "COSCUP 2019",
   "display": "standalone",
-  "start_url": "/",
+  "start_url": ".",
   "theme_color": "#ff0000",
   "background_color": "#ffffff",
   "icons": [
     {
-      "src": "/coscup.jpg",
+      "src": "coscup.jpg",
       "sizes": "180x180",
       "type": "image/jpg"
     }

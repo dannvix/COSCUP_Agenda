@@ -5,10 +5,10 @@ this.addEventListener('install', evt => {
   evt.waitUntil(
     caches.open(cacheKey).then(cache => {
       return cache.addAll([
-        '/',
-        '/manifest.webmanifest',
-        '/index.html',
-        '/coscup.jpg',
+        '.',
+        'manifest.webmanifest',
+        'index.html',
+        'coscup.jpg',
       ]);
     }));
 });
