@@ -1,4 +1,4 @@
-const cacheKey = 'v1';
+const cacheKey = 'v2';
 
 this.addEventListener('install', evt => {
   console.log('installed');

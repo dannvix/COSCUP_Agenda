@@ -302,236 +302,243 @@
 </footer>
 
 <script type="text/babel">
-  Vue.directive('swipeleft', {
-    bind: function(el, binding, vnode) {
-      let startX, startPageTop, originLeft, starredYet;
-      el.addEventListener('touchstart', evt => {
-        el.classList.add('swipe-x');
-        startX = evt.changedTouches[0].pageX;
-        startPageTop = window.scrollY;
-        originLeft = el.style.left || null;
-        starredYet = el.classList.contains('starred');
-      }, false);
-      el.addEventListener('touchmove', evt => {
-        const offsetX = (evt.changedTouches[0].pageX - startX);
-        const diffPageTop = Math.abs(window.scrollY - startPageTop);
-        if (offsetX >= -40 || diffPageTop > 0) {
-          el.style.left = '0';
-        }
-        else {
-          el.style.left = `${Math.max(offsetX, -120)}px`;
-          evt.preventDefault();
-        }
-        if (offsetX <= -80 && diffPageTop <= 0) {
-          el.classList[starredYet ? 'remove' : 'add']('starred');
-        }
-      });
-      el.addEventListener('touchend', evt => {
-        el.classList.remove('swipe-x');
-        el.style.left = originLeft;
+  function main() {
+    Vue.directive('swipeleft', {
+      bind: function(el, binding, vnode) {
+        let startX, startPageTop, originLeft, starredYet;
+        el.addEventListener('touchstart', evt => {
+          el.classList.add('swipe-x');
+          startX = evt.changedTouches[0].pageX;
+          startPageTop = window.scrollY;
+          originLeft = el.style.left || null;
+          starredYet = el.classList.contains('starred');
+        }, false);
+        el.addEventListener('touchmove', evt => {
+          const offsetX = (evt.changedTouches[0].pageX - startX);
+          const diffPageTop = Math.abs(window.scrollY - startPageTop);
+          if (offsetX >= -40 || diffPageTop > 0) {
+            el.style.left = '0';
+          }
+          else {
+            el.style.left = `${Math.max(offsetX, -120)}px`;
+            evt.preventDefault();
+          }
+          if (offsetX <= -80 && diffPageTop <= 0) {
+            el.classList[starredYet ? 'remove' : 'add']('starred');
+          }
+        });
+        el.addEventListener('touchend', evt => {
+          el.classList.remove('swipe-x');
+          el.style.left = originLeft;
 
-        const offsetX = (evt.changedTouches[0].pageX - startX);
-        const diffPageTop = Math.abs(window.scrollY - startPageTop);
-        if (offsetX <= -80 && diffPageTop <= 60) {
-          binding.value(evt);
-        }
-      });
-    },
-  });
-
-  const agendaView = new Vue({
-    el: document.getElementById('agenda'),
-    data: {
-      today: moment().format('YYYYMMDD'),
-      tracks: [],
-      nextOnly: false,
-      starredOnly: false,
-      timeMachine: false,
-      timeMachineValue: 0,
-      starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
-    },
-    computed: {
-      timeMachineTime: function() {
-        return moment(this.today).startOf('day').add(this.timeMachineValue, 'minutes');
+          const offsetX = (evt.changedTouches[0].pageX - startX);
+          const diffPageTop = Math.abs(window.scrollY - startPageTop);
+          if (offsetX <= -80 && diffPageTop <= 60) {
+            binding.value(evt);
+          }
+        });
       },
-    },
-    methods: {
-      updateTracks: function(today, tracks, speakersById) {
-        this.today = today;
-        this.tracks = tracks;
-        this.speakersById = speakersById;
-      },
+    });
 
-      toggleTalkDetails: function(evt) {
-        if (evt) {
-          evt.currentTarget.classList.toggle('display-details');
-        }
+    const agendaView = new Vue({
+      el: document.getElementById('agenda'),
+      data: {
+        today: moment().format('YYYYMMDD'),
+        tracks: [],
+        nextOnly: false,
+        starredOnly: false,
+        timeMachine: false,
+        timeMachineValue: 0,
+        starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
       },
-
-      toggleNextOnly: function() {
-        this.nextOnly = !this.nextOnly;
-        if (this.nextOnly) this.starredOnly = false;
+      computed: {
+        timeMachineTime: function() {
+          return moment(this.today).startOf('day').add(this.timeMachineValue, 'minutes');
+        },
       },
+      methods: {
+        updateTracks: function(today, tracks, speakersById) {
+          this.today = today;
+          this.tracks = tracks;
+          this.speakersById = speakersById;
+        },
 
-      toggleStarredOnly: function() {
-        this.starredOnly = !this.starredOnly;
-        if (this.starredOnly) this.nextOnly = false;
-      },
+        toggleTalkDetails: function(evt) {
+          if (evt) {
+            evt.currentTarget.classList.toggle('display-details');
+          }
+        },
 
-      toggleTimeMachine: function() {
-        this.timeMachine = !this.timeMachine;
-        this.timeMachineValue = this.timeMachineValue || moment().diff(moment().startOf('day'), 'minutes');
-        this.timeMachine ? timeMachineJump() : timeMachineStop();
-      },
+        toggleNextOnly: function() {
+          this.nextOnly = !this.nextOnly;
+          if (this.nextOnly) this.starredOnly = false;
+        },
 
-      toggleTalkStarred: function(evt) {
-        if (evt) {
-          const talkId = evt.currentTarget.getAttribute('data-talk-id');
-          if (talkId) {
-            const index = this.starreds.indexOf(talkId);
-            if (index >= 0) {
-              this.starreds.splice(index, 1);
-              localStorage.setItem('starreds', JSON.stringify(this.starreds));
-              console.log(`removed ${talkId}`);
-            }
-            else {
-              this.starreds.push(talkId);
-              localStorage.setItem('starreds', JSON.stringify(this.starreds));
-              console.log(`added ${talkId}`);
+        toggleStarredOnly: function() {
+          this.starredOnly = !this.starredOnly;
+          if (this.starredOnly) this.nextOnly = false;
+        },
+
+        toggleTimeMachine: function() {
+          this.timeMachine = !this.timeMachine;
+          this.timeMachineValue = this.timeMachineValue || moment().diff(moment().startOf('day'), 'minutes');
+          this.timeMachine ? timeMachineJump() : timeMachineStop();
+        },
+
+        toggleTalkStarred: function(evt) {
+          if (evt) {
+            const talkId = evt.currentTarget.getAttribute('data-talk-id');
+            if (talkId) {
+              const index = this.starreds.indexOf(talkId);
+              if (index >= 0) {
+                this.starreds.splice(index, 1);
+                localStorage.setItem('starreds', JSON.stringify(this.starreds));
+                console.log(`removed ${talkId}`);
+              }
+              else {
+                this.starreds.push(talkId);
+                localStorage.setItem('starreds', JSON.stringify(this.starreds));
+                console.log(`added ${talkId}`);
+              }
             }
           }
-        }
+        },
       },
-    },
-  });
+    });
 
-  // this should be put into agendaView ?
-  function updateTracks(programs, now) {
-    let today = moment().format('YYYYMMDD');
-    if (window.location.hash) {
-      const timestamp = window.location.hash.substring(1);
-      today = moment(timestamp).format('YYYYMMDD');
+    // this should be put into agendaView ?
+    function updateTracks(programs, now) {
+      let today = moment().format('YYYYMMDD');
+      if (window.location.hash) {
+        const timestamp = window.location.hash.substring(1);
+        today = moment(timestamp).format('YYYYMMDD');
+      }
+
+      if (now === undefined) {
+        now = moment();
+        if (now.format('YYYYMMDD') != today) {
+          now = moment(0);
+        }
+      }
+
+      const tracksWithTalks = programs.rooms.map(room => {
+        const roomId = room.id;
+
+        let priorityTags = [
+          'mandarin', 'english', 'taiwanese', 'japanese', // langauges
+          'beginner', 'skilled', 'advanced', 'workshop', // levels
+        ];
+
+        let allTags = programs.tags.filter(tag => tag.id.trim()); // tags contain a `" "` element...
+        allTags = allTags.filter(tag => priorityTags.indexOf(tag.id) >= 0).concat(
+          allTags.filter(tag => priorityTags.indexOf(tag.id) < 0))
+
+        let firstFuture = true;
+        const talks = programs.sessions
+          .filter(t => t.room == roomId)
+          .map(t => ({
+            ...t,
+            beginMoment: moment(t.start),
+            endMoment: moment(t.end),
+            type: programs.session_types
+              .filter(type => type.id == t.type)
+              .map(type => type.zh.name),
+            tags: allTags
+              .filter(tag => t.tags.indexOf(tag.id) >= 0)
+              .map(tag => tag.zh.name.trim()),
+          }))
+          .filter(t => t.beginMoment.format('YYYYMMDD') == today)
+          .map((t, index, talks) => {
+            let isNext = false;
+            if ((t.beginMoment > now) && firstFuture) {
+              firstFuture = false;
+              isNext = true;
+            }
+            return {
+              ...t,
+              isExpired: (t.endMoment < now),
+              isOngoing: (t.beginMoment <= now && t.endMoment >= now),
+              isNext: isNext,
+            };
+          })
+          .sort((a, b) => (a.beginMoment - b.beginMoment));
+        return {
+          roomName: room.zh.name,
+          talks,
+          hasNextOrOngoing: (talks.filter(t => t.isOngoing || t.isNext).length > 0),
+        };
+      }).filter(t => t.talks.length);
+
+      let speakersById = {};
+      programs.speakers.forEach(speaker => {
+        speakersById[speaker.id] = speaker;
+      });
+
+      window.speakersById = speakersById;
+      agendaView.updateTracks(today, tracksWithTalks, speakersById);
     }
 
-    if (now === undefined) {
-      now = moment();
-      if (now.format('YYYYMMDD') != today) {
-        now = moment(0);
+    let tmTimer = undefined;
+    function timeMachineJumpThrottled() {
+      if (!tmTimer) {
+        tmTimer = setTimeout(function() {
+          timeMachineJump();
+          tmTimer = undefined;
+        }, 100);
       }
     }
 
-    const tracksWithTalks = programs.rooms.map(room => {
-      const roomId = room.id;
+    function timeMachineJump() {
+      updateTracks(window.programs, agendaView.timeMachineTime);
+    }
 
-      let priorityTags = [
-        'mandarin', 'english', 'taiwanese', 'japanese', // langauges
-        'beginner', 'skilled', 'advanced', 'workshop', // levels
-      ];
+    function timeMachineStop() {
+      updateTracks(window.programs);
+    }
 
-      let allTags = programs.tags.filter(tag => tag.id.trim()); // tags contain a `" "` element...
-      allTags = allTags.filter(tag => priorityTags.indexOf(tag.id) >= 0).concat(
-        allTags.filter(tag => priorityTags.indexOf(tag.id) < 0))
+    const programsUri = 'https://api2019.coscup.org/programs.json';
 
-      let firstFuture = true;
-      const talks = programs.sessions
-        .filter(t => t.room == roomId)
-        .map(t => ({
-          ...t,
-          beginMoment: moment(t.start),
-          endMoment: moment(t.end),
-          type: programs.session_types
-            .filter(type => type.id == t.type)
-            .map(type => type.zh.name),
-          tags: allTags
-            .filter(tag => t.tags.indexOf(tag.id) >= 0)
-            .map(tag => tag.zh.name.trim()),
-        }))
-        .filter(t => t.beginMoment.format('YYYYMMDD') == today)
-        .map((t, index, talks) => {
-          let isNext = false;
-          if ((t.beginMoment > now) && firstFuture) {
-            firstFuture = false;
-            isNext = true;
-          }
-          return {
-            ...t,
-            isExpired: (t.endMoment < now),
-            isOngoing: (t.beginMoment <= now && t.endMoment >= now),
-            isNext: isNext,
-          };
-        })
-        .sort((a, b) => (a.beginMoment - b.beginMoment));
-      return {
-        roomName: room.zh.name,
-        talks,
-        hasNextOrOngoing: (talks.filter(t => t.isOngoing || t.isNext).length > 0),
-      };
-    }).filter(t => t.talks.length);
+    let hashChangeEvt = undefined;
+    let refreshInterval = undefined;
+    function onProgramsUpdated(programs) {
+      window.programs = programs;
+      updateTracks(programs);
+      if (hashChangeEvt) window.removeEventListener('hashchange', hashChangeEvt);
+      hashChangeEvt = window.addEventListener('hashchange', () => updateTracks(programs), false);
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(() => updateTracks(programs), 60000);
+    }
 
-    let speakersById = {};
-    programs.speakers.forEach(speaker => {
-      speakersById[speaker.id] = speaker;
-    });
+    function reloadPrograms(forced) {
+      const uri = programsUri + (forced ? ('?' + (new Date().getTime())) : '');
+      fetch(uri).then(r => r.json()).then(programs => {
+        localStorage.setItem('programs', JSON.stringify(programs));
+        onProgramsUpdated(programs);
+      });
+    }
 
-    window.speakersById = speakersById;
-    agendaView.updateTracks(today, tracksWithTalks, speakersById);
-  }
+    const cachedPrograms = localStorage.getItem('programs');
+    if (cachedPrograms) {
+      const programs = JSON.parse(cachedPrograms);
+      onProgramsUpdated(programs);
+    }
+    else {
+      reloadPrograms();
+    }
 
-  let tmTimer = undefined;
-  function timeMachineJumpThrottled() {
-    if (!tmTimer) {
-      tmTimer = setTimeout(function() {
-        timeMachineJump();
-        tmTimer = undefined;
-      }, 100);
+    if (!window.location.hash) {
+      window.location.hash = '#20190817';
     }
   }
 
-  function timeMachineJump() {
-    updateTracks(window.programs, agendaView.timeMachineTime);
-  }
-
-  function timeMachineStop() {
-    updateTracks(window.programs);
-  }
-
-  const programsUri = 'https://api2019.coscup.org/programs.json';
-
-  let hashChangeEvt = undefined;
-  let refreshInterval = undefined;
-  function onProgramsUpdated(programs) {
-    window.programs = programs;
-    updateTracks(programs);
-    if (hashChangeEvt) window.removeEventListener('hashchange', hashChangeEvt);
-    hashChangeEvt = window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(updateTracks.bind(null, programs), 60000);
-  }
-
-  function reloadPrograms(forced) {
-    const uri = programsUri + (forced ? ('?' + (new Date().getTime())) : '');
-    fetch(uri).then(r => r.json()).then(programs => {
-      localStorage.setItem('programs', JSON.stringify(programs));
-      onProgramsUpdated(programs);
-    });
-  }
-
-  const cachedPrograms = localStorage.getItem('programs');
-  if (cachedPrograms) {
-    const programs = JSON.parse(cachedPrograms);
-    onProgramsUpdated(programs);
+  if (!navigator.serviceWorker) {
+    main();
   }
   else {
-    reloadPrograms();
-  }
-
-  if (!window.location.hash) {
-    window.location.hash = '#20190817';
-  }
-
-  if (navigator.serviceWorker) {
-    navigator.serviceWorker.register('service_worker.js')
+    navigator.serviceWorker
+      .register('service_worker.js')
       .then(reg => {
+        main();
         console.log(reg.scope);
       });
   }
