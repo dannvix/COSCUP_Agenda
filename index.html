@@ -202,7 +202,7 @@
     }
 
     .time-machine {
-      padding: 8pt;
+      padding: 8pt 0;
       text-align: center;
       font-weight: bold;
       color: hsl(210, 80%, 30%);
@@ -224,6 +224,7 @@
     .time-machine input[type=range]::-webkit-slider-thumb {
       width: 20pt;
       height: 20pt;
+      border: 0;
       border-radius: 10pt;
       background: hsl(210, 80%, 60%);
       -webkit-appearance: none;
@@ -269,7 +270,7 @@
         v-swipeleft.stop="toggleTalkStarred"
         v-bind:data-talk-id="talk.id">
         <div style="white-space:nowrap;overflow-x:hidden">
-          <span class="talk-time">{{ talk.beginMoment.format('HH:mm') }} – {{ talk.endMoment.format('HH:mm') }}</span>
+          <span class="talk-time">{{ talk.beginMoment.format('HH:mm') }}–{{ talk.endMoment.format('HH:mm') }}</span>
           <span class="talk-type" v-if="talk.type.length">{{ talk.type[0] }}</span>
           <span class="talk-tags" v-if="talk.tags.length">
             <span class="talk-tag" v-for="tag in talk.tags">{{ tag }}</span>
@@ -296,7 +297,7 @@
 </div>
 
 <footer>
-  <a href="https://github.com/dannvix/COSCUP_Agenda" target="_blank">Star this project on GitHub ⭐️</a>
+  <a href="https://github.com/dannvix/COSCUP_Agenda" target="_blank">喜歡的話請到 GitHub 幫這個專案按個星 ⭐️</a>
 </footer>
 
 <script type="text/babel">
@@ -518,6 +519,10 @@
       window.addEventListener('hashchange', updateTracks.bind(null, programs), false);
       setInterval(updateTracks.bind(null, programs), 60000); 
     });
+  }
+
+  if (!window.location.hash) {
+    window.location.hash = '#20190817';
   }
 </script>
 </body>
