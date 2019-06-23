@@ -86,6 +86,17 @@
       margin-left: 5pt;
     }
 
+    .no-talks {
+      font-size: 12pt;
+      padding: 10pt 8pt 20pt 8pt;
+      background: hsl(0, 0%, 97%);
+      margin: 10pt;
+      border-radius: 10pt;
+      text-align: center;
+      color: hsl(0, 0%, 50%);
+      line-height: 2;
+    }
+
     .track-title {
       font-size: 12pt;
       font-weight: bold;
@@ -246,8 +257,7 @@
     .last-update {
       color: hsl(0, 0%, 60%);
       font-size: 9pt;
-      padding-top: 8pt;
-      border-top: 1px solid hsl(0, 0%, 85%);
+      padding-top: 10pt;
       text-align: center;
     }
     .last-update.online {
@@ -280,8 +290,19 @@
       onchange="timeMachineJump();" oninput="timeMachineJumpThrottled();">
   </div>
 
+  <div class="no-talks" v-if="nextOnly && tracks.every(t => !t.hasNextOrOngoing)">
+    <span style="font-size:20pt;">😴😴😴</span><br>
+    這個時段沒有議程了
+  </div>
+
+  <div class="no-talks" v-if="starredOnly && starreds.length == 0">
+    <span style="font-size:20pt;">🧐🧐🧐</span><br>
+    您尚未標註任何議程<br>
+    試試看在議程上往左滑動來標註！
+  </div>
+
   <div class="track" v-for="track in tracks"
-    v-if="(!nextOnly && !starredOnly) || (nextOnly && track.hasNextOrOngoing) || (starredOnly && track.talks.filter(t => agendaView.starreds.indexOf(t.id) >= 0).length)">
+    v-if="(!nextOnly && !starredOnly) || (nextOnly && track.hasNextOrOngoing) || (starredOnly && track.talks.filter(t => starreds.indexOf(t.id) >= 0).length)">
     <h2 class="track-title">{{ track.roomName }}</h2>
     <div class="talks" v-bind:class="{ nextOnly: nextOnly, starredOnly: starredOnly }">
       <div class="talk" v-for="(talk, index) in track.talks"
@@ -326,7 +347,10 @@
   <div>
     <a href="https://github.com/dannvix/COSCUP_Agenda" target="_blank">按這裡到 GitHub 我們按個星 ⭐️</a>
     &nbsp;|&nbsp;
-    <a onclick="purgeServiceWorkerCache()">清理離線資料</a>
+    <a onclick="purgeServiceWorkerCache()">清理離線資料 🗑</a>
+    <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
+      v20190623r04
+    </div>
   </div>
 </footer>
 
@@ -540,7 +564,10 @@
     window.programs = programs;
     updateTracks(programs);
     if (hashChangeEvt) window.removeEventListener('hashchange', hashChangeEvt);
-    hashChangeEvt = window.addEventListener('hashchange', () => updateTracks(programs), false);
+    hashChangeEvt = window.addEventListener('hashchange', () => {
+      if (agendaView.timeMachine) agendaView.toggleTimeMachine();
+      updateTracks(programs);
+    }, false);
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(() => updateTracks(programs), 60000);
   }
