@@ -348,7 +348,7 @@
     &nbsp;|&nbsp;
     <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20190623r08
+      v20190623r09
     </div>
   </div>
 </footer>
@@ -611,8 +611,9 @@
     channel.port1.onmessage = evt => {
       if (evt.data.ok) {
         console.log('Confirmed caches purged');
-        window.serviceWorkerReg.update();
-        window.location.reload();
+        window.serviceWorkerReg.update().then(() => {
+          window.location.reload();
+        });
       }
     };
     window.navigator.serviceWorker.controller.postMessage({
