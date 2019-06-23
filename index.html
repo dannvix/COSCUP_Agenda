@@ -297,7 +297,7 @@
     這個時段沒有議程了
   </div>
 
-  <div class="no-talks" v-if="starredOnly && starreds.length == 0">
+  <div class="no-talks" v-if="starredOnly && tracks.every(track => (track.talks.filter(t => starreds.indexOf(t.id) >= 0).length == 0))">
     <span style="font-size:20pt;">🧐🧐🧐</span><br>
     您尚未標註任何議程<br>
     試試看在議程上往左滑動來標註！
@@ -351,7 +351,7 @@
     &nbsp;|&nbsp;
     <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20190623r06
+      v20190623r07
     </div>
   </div>
 </footer>
