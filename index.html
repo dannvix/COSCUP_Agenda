@@ -45,7 +45,7 @@
     footer {
       color: hsl(0, 0%, 60%);
       font-size: 9pt;
-      padding: 20pt 0 40pt 0;
+      padding: 4pt 0 40pt 0;
       text-align: center;
     }
 
@@ -239,6 +239,20 @@
       box-shadow: inset 0 1pt 0 rgba(255, 255, 255, 0.4), 0 1pt 1pt rgba(0, 0, 0, 0.2);
       */
     }
+
+    .last-update {
+      color: hsl(0, 0%, 60%);
+      font-size: 9pt;
+      padding-top: 8pt;
+      border-top: 1px solid hsl(0, 0%, 85%);
+      text-align: center;
+    }
+    .last-update.online {
+      color: hsl(160, 100%, 40%);
+    }
+    .last-update.offline {
+      color: hsl(0, 80%, 70%);
+    }
   </style>
 </head>
 <body>
@@ -299,6 +313,10 @@
       </div>
     </div>
   </div>
+
+  <div class="last-update" v-bind:class="{ online: this.online, offline: !this.online  }">
+    議程表最近同步：{{ this.lastUpdate.format('YYYY/MM/DD HH:mm:ss') }}
+  </div>
 </div>
 
 <footer>
@@ -357,6 +375,8 @@
       timeMachine: false,
       timeMachineValue: 0,
       starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
+      lastUpdate: moment(0),
+      online: window.navigator.onLine,
     },
     computed: {
       timeMachineTime: function() {
@@ -368,6 +388,7 @@
         this.today = today;
         this.tracks = tracks;
         this.speakersById = speakersById;
+        this.lastUpdate = moment();
       },
 
       toggleTalkDetails: function(evt) {
@@ -409,6 +430,10 @@
             }
           }
         }
+      },
+
+      setOnline: function(isOnline) {
+        this.online = isOnline;
       },
     },
   });
@@ -537,8 +562,8 @@
     window.location.hash = '#20190817';
   }
 
-  if (navigator.serviceWorker) {
-    navigator.serviceWorker
+  if (window.navigator.serviceWorker) {
+    window.navigator.serviceWorker
       .register('service_worker.js')
       .then(reg => {
         console.log(reg.scope);
@@ -547,6 +572,8 @@
   }
 
   function purgeServiceWorkerCache() {
+    if (!window.navigator.onLine) return;
+
     const channel = new MessageChannel();
     channel.port1.onmessage = evt => {
       if (evt.data.ok) {
@@ -555,10 +582,13 @@
         window.location.reload();
       }
     };
-    navigator.serviceWorker.controller.postMessage({
+    window.navigator.serviceWorker.controller.postMessage({
       action: 'purgeCache',
     }, [channel.port2]);
   }
+
+  window.addEventListener('online', () => agendaView.setOnline(true));
+  window.addEventListener('offline', () => agendaView.setOnline(false));
 </script>
 </body>
 </html>
