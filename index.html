@@ -349,9 +349,9 @@
   <div>
     <a href="https://github.com/dannvix/COSCUP_Agenda" target="_blank">按這裡到 GitHub 我們按個星 ⭐️</a>
     &nbsp;|&nbsp;
-    <a onclick="purgeServiceWorkerCache()">清理離線資料 🗑</a>
+    <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20190623r05
+      v20190623r06
     </div>
   </div>
 </footer>
@@ -604,8 +604,11 @@
       });
   }
 
-  function purgeServiceWorkerCache() {
+  function purgeOfflineData() {
     if (!window.navigator.onLine) return;
+
+    localStorage.removeItem('programs');
+    console.log('Removed cached programs');
 
     const channel = new MessageChannel();
     channel.port1.onmessage = evt => {
