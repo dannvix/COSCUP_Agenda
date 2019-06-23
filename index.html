@@ -186,15 +186,12 @@
       display: none;
     }
 
-    .talk.display-details .talk-intro {
-      display: block;
-      word-break: break-all;
-    }
+    .talk.display-details .talk-intro,
     .talk.display-details .talk-speaker-intros {
       display: block;
-      word-break: break-all;
+      word-break: break-word;
+      hyphens: auto;
     }
-
 
     .talk.starred {
       border-right: 6px solid hsl(45, 100%, 50%);
@@ -351,7 +348,7 @@
     &nbsp;|&nbsp;
     <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20190623r07
+      v20190623r08
     </div>
   </div>
 </footer>
