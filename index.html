@@ -442,18 +442,19 @@
   });
 
   // this should be put into agendaView ?
-  function updateTracks(programs, now) {
+  function updateTracks(programs) {
     let today = moment().format('YYYYMMDD');
     if (window.location.hash) {
       const timestamp = window.location.hash.substring(1);
       today = moment(timestamp).format('YYYYMMDD');
     }
 
-    if (now === undefined) {
-      now = moment();
-      if (now.format('YYYYMMDD') != today) {
-        now = moment(0);
-      }
+    let now = moment();
+    if (agendaView.timeMachine) {
+      now = agendaView.timeMachineTime;
+    }
+    else if (now.format('YYYYMMDD') != today) {
+      now = moment(0);
     }
 
     const tracksWithTalks = programs.rooms.map(room => {
@@ -524,7 +525,7 @@
   }
 
   function timeMachineJump() {
-    updateTracks(window.programs, agendaView.timeMachineTime);
+    updateTracks(window.programs);
   }
 
   function timeMachineStop() {
