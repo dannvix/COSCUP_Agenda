@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <title>COSCUP 2019</title>
 
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -298,249 +302,262 @@
 </div>
 
 <footer>
-  <a href="https://github.com/dannvix/COSCUP_Agenda" target="_blank">喜歡的話請到 GitHub 幫這個專案按個星 ⭐️</a>
+  <div>
+    <a href="https://github.com/dannvix/COSCUP_Agenda" target="_blank">喜歡的話請到 GitHub 幫這個專案按個星 ⭐️</a>
+    &nbsp;|&nbsp;
+    <a onclick="purgeServiceWorkerCache()">清理快取資料</a>
+  </div>
 </footer>
 
 <script type="text/babel">
-  function main() {
-    Vue.directive('swipeleft', {
-      bind: function(el, binding, vnode) {
-        let startX, startPageTop, originLeft, starredYet;
-        el.addEventListener('touchstart', evt => {
-          el.classList.add('swipe-x');
-          startX = evt.changedTouches[0].pageX;
-          startPageTop = window.scrollY;
-          originLeft = el.style.left || null;
-          starredYet = el.classList.contains('starred');
-        }, false);
-        el.addEventListener('touchmove', evt => {
-          const offsetX = (evt.changedTouches[0].pageX - startX);
-          const diffPageTop = Math.abs(window.scrollY - startPageTop);
-          if (offsetX >= -40 || diffPageTop > 0) {
-            el.style.left = '0';
-          }
-          else {
-            el.style.left = `${Math.max(offsetX, -120)}px`;
-            evt.preventDefault();
-          }
-          if (offsetX <= -80 && diffPageTop <= 0) {
-            el.classList[starredYet ? 'remove' : 'add']('starred');
-          }
-        });
-        el.addEventListener('touchend', evt => {
-          el.classList.remove('swipe-x');
-          el.style.left = originLeft;
-
-          const offsetX = (evt.changedTouches[0].pageX - startX);
-          const diffPageTop = Math.abs(window.scrollY - startPageTop);
-          if (offsetX <= -80 && diffPageTop <= 60) {
-            binding.value(evt);
-          }
-        });
-      },
-    });
-
-    const agendaView = new Vue({
-      el: document.getElementById('agenda'),
-      data: {
-        today: moment().format('YYYYMMDD'),
-        tracks: [],
-        nextOnly: false,
-        starredOnly: false,
-        timeMachine: false,
-        timeMachineValue: 0,
-        starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
-      },
-      computed: {
-        timeMachineTime: function() {
-          return moment(this.today).startOf('day').add(this.timeMachineValue, 'minutes');
-        },
-      },
-      methods: {
-        updateTracks: function(today, tracks, speakersById) {
-          this.today = today;
-          this.tracks = tracks;
-          this.speakersById = speakersById;
-        },
-
-        toggleTalkDetails: function(evt) {
-          if (evt) {
-            evt.currentTarget.classList.toggle('display-details');
-          }
-        },
-
-        toggleNextOnly: function() {
-          this.nextOnly = !this.nextOnly;
-          if (this.nextOnly) this.starredOnly = false;
-        },
-
-        toggleStarredOnly: function() {
-          this.starredOnly = !this.starredOnly;
-          if (this.starredOnly) this.nextOnly = false;
-        },
-
-        toggleTimeMachine: function() {
-          this.timeMachine = !this.timeMachine;
-          this.timeMachineValue = this.timeMachineValue || moment().diff(moment().startOf('day'), 'minutes');
-          this.timeMachine ? timeMachineJump() : timeMachineStop();
-        },
-
-        toggleTalkStarred: function(evt) {
-          if (evt) {
-            const talkId = evt.currentTarget.getAttribute('data-talk-id');
-            if (talkId) {
-              const index = this.starreds.indexOf(talkId);
-              if (index >= 0) {
-                this.starreds.splice(index, 1);
-                localStorage.setItem('starreds', JSON.stringify(this.starreds));
-                console.log(`removed ${talkId}`);
-              }
-              else {
-                this.starreds.push(talkId);
-                localStorage.setItem('starreds', JSON.stringify(this.starreds));
-                console.log(`added ${talkId}`);
-              }
-            }
-          }
-        },
-      },
-    });
-
-    // this should be put into agendaView ?
-    function updateTracks(programs, now) {
-      let today = moment().format('YYYYMMDD');
-      if (window.location.hash) {
-        const timestamp = window.location.hash.substring(1);
-        today = moment(timestamp).format('YYYYMMDD');
-      }
-
-      if (now === undefined) {
-        now = moment();
-        if (now.format('YYYYMMDD') != today) {
-          now = moment(0);
+  Vue.directive('swipeleft', {
+    bind: function(el, binding, vnode) {
+      let startX, startPageTop, originLeft, starredYet;
+      el.addEventListener('touchstart', evt => {
+        el.classList.add('swipe-x');
+        startX = evt.changedTouches[0].pageX;
+        startPageTop = window.scrollY;
+        originLeft = el.style.left || null;
+        starredYet = el.classList.contains('starred');
+      }, false);
+      el.addEventListener('touchmove', evt => {
+        const offsetX = (evt.changedTouches[0].pageX - startX);
+        const diffPageTop = Math.abs(window.scrollY - startPageTop);
+        if (offsetX >= -40 || diffPageTop > 0) {
+          el.style.left = '0';
         }
-      }
+        else {
+          el.style.left = `${Math.max(offsetX, -120)}px`;
+          evt.preventDefault();
+        }
+        if (offsetX <= -80 && diffPageTop <= 0) {
+          el.classList[starredYet ? 'remove' : 'add']('starred');
+        }
+      });
+      el.addEventListener('touchend', evt => {
+        el.classList.remove('swipe-x');
+        el.style.left = originLeft;
 
-      const tracksWithTalks = programs.rooms.map(room => {
-        const roomId = room.id;
+        const offsetX = (evt.changedTouches[0].pageX - startX);
+        const diffPageTop = Math.abs(window.scrollY - startPageTop);
+        if (offsetX <= -80 && diffPageTop <= 60) {
+          binding.value(evt);
+        }
+      });
+    },
+  });
 
-        let priorityTags = [
-          'mandarin', 'english', 'taiwanese', 'japanese', // langauges
-          'beginner', 'skilled', 'advanced', 'workshop', // levels
-        ];
+  const agendaView = new Vue({
+    el: document.getElementById('agenda'),
+    data: {
+      today: moment().format('YYYYMMDD'),
+      tracks: [],
+      nextOnly: false,
+      starredOnly: false,
+      timeMachine: false,
+      timeMachineValue: 0,
+      starreds: JSON.parse(localStorage.getItem('starreds') || '[]'),
+    },
+    computed: {
+      timeMachineTime: function() {
+        return moment(this.today).startOf('day').add(this.timeMachineValue, 'minutes');
+      },
+    },
+    methods: {
+      updateTracks: function(today, tracks, speakersById) {
+        this.today = today;
+        this.tracks = tracks;
+        this.speakersById = speakersById;
+      },
 
-        let allTags = programs.tags.filter(tag => tag.id.trim()); // tags contain a `" "` element...
-        allTags = allTags.filter(tag => priorityTags.indexOf(tag.id) >= 0).concat(
-          allTags.filter(tag => priorityTags.indexOf(tag.id) < 0))
+      toggleTalkDetails: function(evt) {
+        if (evt) {
+          evt.currentTarget.classList.toggle('display-details');
+        }
+      },
 
-        let firstFuture = true;
-        const talks = programs.sessions
-          .filter(t => t.room == roomId)
-          .map(t => ({
-            ...t,
-            beginMoment: moment(t.start),
-            endMoment: moment(t.end),
-            type: programs.session_types
-              .filter(type => type.id == t.type)
-              .map(type => type.zh.name),
-            tags: allTags
-              .filter(tag => t.tags.indexOf(tag.id) >= 0)
-              .map(tag => tag.zh.name.trim()),
-          }))
-          .filter(t => t.beginMoment.format('YYYYMMDD') == today)
-          .map((t, index, talks) => {
-            let isNext = false;
-            if ((t.beginMoment > now) && firstFuture) {
-              firstFuture = false;
-              isNext = true;
+      toggleNextOnly: function() {
+        this.nextOnly = !this.nextOnly;
+        if (this.nextOnly) this.starredOnly = false;
+      },
+
+      toggleStarredOnly: function() {
+        this.starredOnly = !this.starredOnly;
+        if (this.starredOnly) this.nextOnly = false;
+      },
+
+      toggleTimeMachine: function() {
+        this.timeMachine = !this.timeMachine;
+        this.timeMachineValue = this.timeMachineValue || moment().diff(moment().startOf('day'), 'minutes');
+        this.timeMachine ? timeMachineJump() : timeMachineStop();
+      },
+
+      toggleTalkStarred: function(evt) {
+        if (evt) {
+          const talkId = evt.currentTarget.getAttribute('data-talk-id');
+          if (talkId) {
+            const index = this.starreds.indexOf(talkId);
+            if (index >= 0) {
+              this.starreds.splice(index, 1);
+              localStorage.setItem('starreds', JSON.stringify(this.starreds));
+              console.log(`removed ${talkId}`);
             }
-            return {
-              ...t,
-              isExpired: (t.endMoment < now),
-              isOngoing: (t.beginMoment <= now && t.endMoment >= now),
-              isNext: isNext,
-            };
-          })
-          .sort((a, b) => (a.beginMoment - b.beginMoment));
-        return {
-          roomName: room.zh.name,
-          talks,
-          hasNextOrOngoing: (talks.filter(t => t.isOngoing || t.isNext).length > 0),
-        };
-      }).filter(t => t.talks.length);
+            else {
+              this.starreds.push(talkId);
+              localStorage.setItem('starreds', JSON.stringify(this.starreds));
+              console.log(`added ${talkId}`);
+            }
+          }
+        }
+      },
+    },
+  });
 
-      let speakersById = {};
-      programs.speakers.forEach(speaker => {
-        speakersById[speaker.id] = speaker;
-      });
-
-      window.speakersById = speakersById;
-      agendaView.updateTracks(today, tracksWithTalks, speakersById);
+  // this should be put into agendaView ?
+  function updateTracks(programs, now) {
+    let today = moment().format('YYYYMMDD');
+    if (window.location.hash) {
+      const timestamp = window.location.hash.substring(1);
+      today = moment(timestamp).format('YYYYMMDD');
     }
 
-    let tmTimer = undefined;
-    function timeMachineJumpThrottled() {
-      if (!tmTimer) {
-        tmTimer = setTimeout(function() {
-          timeMachineJump();
-          tmTimer = undefined;
-        }, 100);
+    if (now === undefined) {
+      now = moment();
+      if (now.format('YYYYMMDD') != today) {
+        now = moment(0);
       }
     }
 
-    function timeMachineJump() {
-      updateTracks(window.programs, agendaView.timeMachineTime);
-    }
+    const tracksWithTalks = programs.rooms.map(room => {
+      const roomId = room.id;
 
-    function timeMachineStop() {
-      updateTracks(window.programs);
-    }
+      let priorityTags = [
+        'mandarin', 'english', 'taiwanese', 'japanese', // langauges
+        'beginner', 'skilled', 'advanced', 'workshop', // levels
+      ];
 
-    const programsUri = 'https://api2019.coscup.org/programs.json';
+      let allTags = programs.tags.filter(tag => tag.id.trim()); // tags contain a `" "` element...
+      allTags = allTags.filter(tag => priorityTags.indexOf(tag.id) >= 0).concat(
+        allTags.filter(tag => priorityTags.indexOf(tag.id) < 0))
 
-    let hashChangeEvt = undefined;
-    let refreshInterval = undefined;
-    function onProgramsUpdated(programs) {
-      window.programs = programs;
-      updateTracks(programs);
-      if (hashChangeEvt) window.removeEventListener('hashchange', hashChangeEvt);
-      hashChangeEvt = window.addEventListener('hashchange', () => updateTracks(programs), false);
-      if (refreshInterval) clearInterval(refreshInterval);
-      refreshInterval = setInterval(() => updateTracks(programs), 60000);
-    }
+      let firstFuture = true;
+      const talks = programs.sessions
+        .filter(t => t.room == roomId)
+        .map(t => ({
+          ...t,
+          beginMoment: moment(t.start),
+          endMoment: moment(t.end),
+          type: programs.session_types
+            .filter(type => type.id == t.type)
+            .map(type => type.zh.name),
+          tags: allTags
+            .filter(tag => t.tags.indexOf(tag.id) >= 0)
+            .map(tag => tag.zh.name.trim()),
+        }))
+        .filter(t => t.beginMoment.format('YYYYMMDD') == today)
+        .map((t, index, talks) => {
+          let isNext = false;
+          if ((t.beginMoment > now) && firstFuture) {
+            firstFuture = false;
+            isNext = true;
+          }
+          return {
+            ...t,
+            isExpired: (t.endMoment < now),
+            isOngoing: (t.beginMoment <= now && t.endMoment >= now),
+            isNext: isNext,
+          };
+        })
+        .sort((a, b) => (a.beginMoment - b.beginMoment));
+      return {
+        roomName: room.zh.name,
+        talks,
+        hasNextOrOngoing: (talks.filter(t => t.isOngoing || t.isNext).length > 0),
+      };
+    }).filter(t => t.talks.length);
 
-    function reloadPrograms(forced) {
-      const uri = programsUri + (forced ? ('?' + (new Date().getTime())) : '');
-      fetch(uri).then(r => r.json()).then(programs => {
-        localStorage.setItem('programs', JSON.stringify(programs));
-        onProgramsUpdated(programs);
-      });
-    }
+    let speakersById = {};
+    programs.speakers.forEach(speaker => {
+      speakersById[speaker.id] = speaker;
+    });
 
-    const cachedPrograms = localStorage.getItem('programs');
-    if (cachedPrograms) {
-      const programs = JSON.parse(cachedPrograms);
-      onProgramsUpdated(programs);
-    }
-    else {
-      reloadPrograms();
-    }
+    window.speakersById = speakersById;
+    agendaView.updateTracks(today, tracksWithTalks, speakersById);
+  }
 
-    if (!window.location.hash) {
-      window.location.hash = '#20190817';
+  let tmTimer = undefined;
+  function timeMachineJumpThrottled() {
+    if (!tmTimer) {
+      tmTimer = setTimeout(function() {
+        timeMachineJump();
+        tmTimer = undefined;
+      }, 100);
     }
   }
 
-  if (!navigator.serviceWorker) {
-    main();
+  function timeMachineJump() {
+    updateTracks(window.programs, agendaView.timeMachineTime);
+  }
+
+  function timeMachineStop() {
+    updateTracks(window.programs);
+  }
+
+  const programsUri = 'https://api2019.coscup.org/programs.json';
+
+  let hashChangeEvt = undefined;
+  let refreshInterval = undefined;
+  function onProgramsUpdated(programs) {
+    window.programs = programs;
+    updateTracks(programs);
+    if (hashChangeEvt) window.removeEventListener('hashchange', hashChangeEvt);
+    hashChangeEvt = window.addEventListener('hashchange', () => updateTracks(programs), false);
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => updateTracks(programs), 60000);
+  }
+
+  function reloadPrograms(forced) {
+    const uri = programsUri + (forced ? ('?' + (new Date().getTime())) : '');
+    fetch(uri).then(r => r.json()).then(programs => {
+      localStorage.setItem('programs', JSON.stringify(programs));
+      onProgramsUpdated(programs);
+    });
+  }
+
+  const cachedPrograms = localStorage.getItem('programs');
+  if (cachedPrograms) {
+    const programs = JSON.parse(cachedPrograms);
+    onProgramsUpdated(programs);
   }
   else {
+    reloadPrograms();
+  }
+
+  if (!window.location.hash) {
+    window.location.hash = '#20190817';
+  }
+
+  if (navigator.serviceWorker) {
     navigator.serviceWorker
       .register('service_worker.js')
       .then(reg => {
-        main();
         console.log(reg.scope);
+        window.serviceWorkerReg = reg;
       });
+  }
+
+  function purgeServiceWorkerCache() {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = evt => {
+      if (evt.data.ok) {
+        console.log('Confirmed caches purged');
+        window.serviceWorkerReg.update();
+        window.location.reload();
+      }
+    };
+    navigator.serviceWorker.controller.postMessage({
+      action: 'purgeCache',
+    }, [channel.port2]);
   }
 </script>
 </body>

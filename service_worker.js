@@ -1,4 +1,5 @@
-const cacheKey = 'v2';
+const cacheKey = 'v4';
+console.log(`cacheKey = [${cacheKey}]`);
 
 this.addEventListener('install', evt => {
   console.log('installed');
@@ -38,6 +39,21 @@ this.addEventListener('activate', evt => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.filter(cacheName => cacheName != cacheKey)
-          .map(cacheName => cache.delete(cacheName)))
+          .map(cacheName => caches.delete(cacheName)))
     }).then(() => self.clients.claim()));
+});
+
+this.addEventListener('message', evt => {
+  if (evt.data.action == 'purgeCache') {
+    console.log(`Purging caches...`);
+    caches.keys().then(cacheNames => {
+      return Promise.all(cacheNames.map(cacheName => {
+        console.log(`Cache [${cacheName}] deleted`);
+        return caches.delete(cacheName);
+      }));
+    }).then(() => {
+      console.log('Caches purged');
+      evt.ports[0].postMessage({ok: true})
+    });
+  }
 });
