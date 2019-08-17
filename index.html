@@ -309,7 +309,7 @@
     <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找</a>
     <a v-on:click.prevent="toggleStarredOnly" v-bind:class="{ active: starredOnly }">星</a>
     <a v-on:click.prevent="toggleTimeMachine" v-bind:class="{ active: timeMachine }">跳</a>
-    <a onclick="toggleHorizontal();">轉</a>
+    <a id="horizontal-button" onclick="toggleHorizontal();">直</a>
     <a style="font-weight:bold" onclick="reloadPrograms(true);">&#8635;</a>
   </nav>
 
@@ -612,12 +612,18 @@
   }
 
   function toggleHorizontal() {
-    const className = document.body.className || '';
-    const isHorizontal = className.indexOf('horizontal') !== -1;
+    const bodyClass = document.body.className || '';
+    const isHorizontal = bodyClass.indexOf('horizontal') !== -1;
+    const button = document.getElementById('horizontal-button');
+    const buttonClass = button.className;
     if (!isHorizontal) {
-      document.body.className = className + ' horizontal';
+      document.body.className = bodyClass + ' horizontal';
+      button.className = buttonClass + ' active';
+      button.innerHTML = '平';
     } else {
-      document.body.className = className.replace(/\s+horizontal/, '');
+      document.body.className = bodyClass.replace(/\s+horizontal/, '');
+      button.className = buttonClass.replace(/\s+active/, '');
+      button.innerHTML = '直';
     }
   }
 
