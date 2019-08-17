@@ -272,20 +272,9 @@
       margin: auto;
     }
 
-    body.horizontal #agenda {
+    body.horizontal #track-list {
       display: flex;
       flex-direction: row;
-    }
-
-    body.horizontal nav {
-      display: flex;
-      flex-direction: column;
-      margin: 0 10pt;
-    }
-
-    body.horizontal nav a + a {
-      margin-left: 0;
-      margin-top: 5pt;
     }
 
     body.horizontal .track-title {
@@ -296,12 +285,14 @@
       margin-left: 10pt;
     }
 
-    body.horizontal .last-update {
-      padding: 0 10pt;
+    body.horizontal .no-talks {
+      max-width: 464pt;
+      margin: 10pt auto;
     }
 
-    body.horizontal footer {
-      margin-top: 10pt;
+    body.horizontal .time-machine {
+      max-width: 500pt;
+      margin: 20pt auto;
     }
   </style>
 </head>
@@ -339,37 +330,39 @@
     試試看在議程上往左滑動來標註！
   </div>
 
-  <div class="track" v-for="track in tracks"
-    v-if="(!nextOnly && !starredOnly) || (nextOnly && track.hasNextOrOngoing) || (starredOnly && track.talks.filter(t => starreds.indexOf(t.id) >= 0).length)">
-    <h2 class="track-title">{{ track.roomName }}</h2>
-    <div class="talks" v-bind:class="{ nextOnly: nextOnly, starredOnly: starredOnly }">
-      <div class="talk" v-for="(talk, index) in track.talks"
-        v-bind:class="{ expired: talk.isExpired, ongoing: talk.isOngoing, next: talk.isNext,
-          starred: (starreds.indexOf(talk.id) >= 0) }"
-        v-on:click="console.dir(talk);/*for debugging*/"
-        v-on:click.stop="toggleTalkDetails"
-        v-swipeleft.stop="toggleTalkStarred"
-        v-bind:data-talk-id="talk.id">
-        <div style="white-space:nowrap;overflow-x:hidden">
-          <span class="talk-time">{{ talk.beginMoment.format('HH:mm') }}–{{ talk.endMoment.format('HH:mm') }}</span>
-          <span class="talk-type" v-if="talk.type.length">{{ talk.type[0] }}</span>
-          <span class="talk-tags" v-if="talk.tags.length">
-            <span class="talk-tag" v-for="tag in talk.tags">{{ tag }}</span>
+  <div id="track-list">
+    <div class="track" v-for="track in tracks"
+      v-if="(!nextOnly && !starredOnly) || (nextOnly && track.hasNextOrOngoing) || (starredOnly && track.talks.filter(t => starreds.indexOf(t.id) >= 0).length)">
+      <h2 class="track-title">{{ track.roomName }}</h2>
+      <div class="talks" v-bind:class="{ nextOnly: nextOnly, starredOnly: starredOnly }">
+        <div class="talk" v-for="(talk, index) in track.talks"
+          v-bind:class="{ expired: talk.isExpired, ongoing: talk.isOngoing, next: talk.isNext,
+            starred: (starreds.indexOf(talk.id) >= 0) }"
+          v-on:click="console.dir(talk);/*for debugging*/"
+          v-on:click.stop="toggleTalkDetails"
+          v-swipeleft.stop="toggleTalkStarred"
+          v-bind:data-talk-id="talk.id">
+          <div style="white-space:nowrap;overflow-x:hidden">
+            <span class="talk-time">{{ talk.beginMoment.format('HH:mm') }}–{{ talk.endMoment.format('HH:mm') }}</span>
+            <span class="talk-type" v-if="talk.type.length">{{ talk.type[0] }}</span>
+            <span class="talk-tags" v-if="talk.tags.length">
+              <span class="talk-tag" v-for="tag in talk.tags">{{ tag }}</span>
+            </span>
+          </div>
+          <div style="margin:3pt 0;" v-if="!talk.expire"></div>
+          <span class="talk-title">{{ talk.zh.title }}</span>
+          <span class="talk-speakers" v-if="talk.speakers.length">
+            ({{ talk.speakers.map(speakerId => speakersById[speakerId]).map(s => s.zh.name).join(', ') }})
           </span>
-        </div>
-        <div style="margin:3pt 0;" v-if="!talk.expire"></div>
-        <span class="talk-title">{{ talk.zh.title }}</span>
-        <span class="talk-speakers" v-if="talk.speakers.length">
-          ({{ talk.speakers.map(speakerId => speakersById[speakerId]).map(s => s.zh.name).join(', ') }})
-        </span>
-        <div class="talk-intro" v-if="talk.zh.description">
-          {{ talk.zh.description }}
-        </div>
-        <div class="talk-speaker-intros">
-          <div class="talk-speaker-intro"
-            v-for="speaker in talk.speakers.map(speakerId => speakersById[speakerId]).filter(s => s)"
-            v-if="speaker.zh.bio">
-            {{ speaker.zh.name }}  ▸ {{ speaker.zh.bio }}
+          <div class="talk-intro" v-if="talk.zh.description">
+            {{ talk.zh.description }}
+          </div>
+          <div class="talk-speaker-intros">
+            <div class="talk-speaker-intro"
+              v-for="speaker in talk.speakers.map(speakerId => speakersById[speakerId]).filter(s => s)"
+              v-if="speaker.zh.bio">
+              {{ speaker.zh.name }}  ▸ {{ speaker.zh.bio }}
+            </div>
           </div>
         </div>
       </div>
@@ -621,7 +614,6 @@
   function toggleHorizontal() {
     const className = document.body.className || '';
     const isHorizontal = className.indexOf('horizontal') !== -1;
-    console.log(isHorizontal);
     if (!isHorizontal) {
       document.body.className = className + ' horizontal';
     } else {
