@@ -265,6 +265,44 @@
     .last-update.offline {
       color: hsl(0, 80%, 70%);
     }
+
+    /* horizontal mode */
+    body.horizontal {
+      max-width: inherit;
+      margin: auto;
+    }
+
+    body.horizontal #agenda {
+      display: flex;
+      flex-direction: row;
+    }
+
+    body.horizontal nav {
+      display: flex;
+      flex-direction: column;
+      margin: 0 10pt;
+    }
+
+    body.horizontal nav a + a {
+      margin-left: 0;
+      margin-top: 5pt;
+    }
+
+    body.horizontal .track-title {
+      margin-top: 0;
+    }
+
+    body.horizontal .track + .track {
+      margin-left: 10pt;
+    }
+
+    body.horizontal .last-update {
+      padding: 0 10pt;
+    }
+
+    body.horizontal footer {
+      margin-top: 10pt;
+    }
   </style>
 </head>
 <body>
@@ -280,6 +318,7 @@
     <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找</a>
     <a v-on:click.prevent="toggleStarredOnly" v-bind:class="{ active: starredOnly }">星</a>
     <a v-on:click.prevent="toggleTimeMachine" v-bind:class="{ active: timeMachine }">跳</a>
+    <a onclick="toggleHorizontal();">轉</a>
     <a style="font-weight:bold" onclick="reloadPrograms(true);">&#8635;</a>
   </nav>
 
@@ -577,6 +616,17 @@
       localStorage.setItem('programs', JSON.stringify(programs));
       onProgramsUpdated(programs);
     });
+  }
+
+  function toggleHorizontal() {
+    const className = document.body.className || '';
+    const isHorizontal = className.indexOf('horizontal') !== -1;
+    console.log(isHorizontal);
+    if (!isHorizontal) {
+      document.body.className = className + ' horizontal';
+    } else {
+      document.body.className = className.replace(/\s+horizontal/, '');
+    }
   }
 
   const cachedPrograms = localStorage.getItem('programs');
