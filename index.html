@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>COSCUP 2019</title>
+  <title>COSCUP 2020</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -11,7 +11,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="COSCUP 2019">
+  <meta name="apple-mobile-web-app-title" content="COSCUP 2020">
   <link rel="apple-touch-icon" href="coscup.jpg">
   <link rel="apple-touch-icon" sizes="152x152" href="coscup.jpg">
   <link rel="apple-touch-icon" sizes="180x180" href="coscup.jpg">
@@ -208,7 +208,7 @@
     .talk.ongoing {
       border-left: 6px solid hsl(5, 100%, 80%);
     }
-      
+
 
     /* the next talk */
     .talk.next {
@@ -278,13 +278,13 @@
 <body>
 
 <header>
-  <h1>COSCUP 2019 ▸ 下一場聽什麼？</h1>
+  <h1>COSCUP 2020 ▸ 下一場聽什麼？</h1>
 </header>
 
 <div id="agenda">
   <nav>
-    <a href="#20190817" v-bind:class="{ active: (today == '20190817') }">D1</a>
-    <a href="#20190818" v-bind:class="{ active: (today == '20190818') }">D2</a>
+    <a href="#20200801" v-bind:class="{ active: (today == '20200801') }">D1</a>
+    <a href="#20200802" v-bind:class="{ active: (today == '20200802') }">D2</a>
     <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找</a>
     <a v-on:click.prevent="toggleStarredOnly" v-bind:class="{ active: starredOnly }">星</a>
     <a v-on:click.prevent="toggleTimeMachine" v-bind:class="{ active: timeMachine }">跳</a>
@@ -356,7 +356,7 @@
     &nbsp;|&nbsp;
     <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20190818r03
+      v20200730r01
     </div>
   </div>
 </footer>
@@ -563,7 +563,7 @@
     updateTracks(window.programs);
   }
 
-  const programsUri = 'https://api2019.coscup.org/programs.json';
+  const programsUri = 'https://coscup.org/2020/json/session.json';
 
   let hashChangeEvt = undefined;
   let refreshInterval = undefined;
@@ -597,7 +597,7 @@
   }
 
   if (!window.location.hash) {
-    window.location.hash = '#20190817';
+    window.location.hash = '#20200801';
   }
 
   if (window.navigator.serviceWorker) {
