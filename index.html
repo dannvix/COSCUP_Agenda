@@ -288,7 +288,7 @@
     <a v-on:click.prevent="toggleNextOnly" v-bind:class="{ active: nextOnly }">找</a>
     <a v-on:click.prevent="toggleStarredOnly" v-bind:class="{ active: starredOnly }">星</a>
     <a v-on:click.prevent="toggleTimeMachine" v-bind:class="{ active: timeMachine }">跳</a>
-    <a style="font-weight:bold" onclick="reloadPrograms(true);">&#8635;</a>
+    <a style="font-weight:bold" onclick="reloadPrograms(true);">更</a>
   </nav>
 
   <div class="time-machine" v-if="timeMachine">
@@ -356,7 +356,7 @@
     &nbsp;|&nbsp;
     <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20200730r01
+      v20200730r2
     </div>
   </div>
 </footer>
@@ -515,6 +515,7 @@
             .map(tag => tag.zh.name.trim()),
         }))
         .filter(t => t.beginMoment.format('YYYYMMDD') == today)
+        .sort((a, b) => (a.beginMoment - b.beginMoment))
         .map((t, index, talks) => {
           let isNext = false;
           if ((t.beginMoment > now) && firstFuture) {
@@ -527,14 +528,24 @@
             isOngoing: (t.beginMoment <= now && t.endMoment >= now),
             isNext: isNext,
           };
-        })
-        .sort((a, b) => (a.beginMoment - b.beginMoment));
+        });
       return {
         roomName: room.zh.name,
+        roomId: roomId,
         talks,
         hasNextOrOngoing: (talks.filter(t => t.isOngoing || t.isNext).length > 0),
       };
     }).filter(t => t.talks.length);
+
+    // COSCUP 2020
+    const sortedRoomIds = [
+      'RB105', 'AU',
+      'TR209', 'TR211', 'TR212', 'TR213', 'TR214',
+      'TR309', 'TR311', 'TR313',
+      'TR409-2', 'TR410', 'TR411', 'TR412-1', 'TR412-2', 'TR413-1', 'TR413-2'
+    ];
+    const sortedTracksWithTalks = tracksWithTalks.sort((a, b) =>
+      (sortedRoomIds.indexOf(a.roomId) - sortedRoomIds.indexOf(b.roomId)));
 
     let speakersById = {};
     programs.speakers.forEach(speaker => {
@@ -542,7 +553,7 @@
     });
 
     window.speakersById = speakersById;
-    agendaView.updateTracks(today, tracksWithTalks, speakersById);
+    agendaView.updateTracks(today, sortedTracksWithTalks, speakersById);
   }
 
   let tmTimer = undefined;
