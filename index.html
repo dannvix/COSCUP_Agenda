@@ -316,7 +316,7 @@
         v-bind:class="{ expired: talk.isExpired, ongoing: talk.isOngoing, next: talk.isNext,
           starred: (starreds.indexOf(talk.id) >= 0) }"
         v-on:click="console.dir(talk);/*for debugging*/"
-        v-on:click.stop="toggleTalkDetails"
+        v-on:mouseup.stop="toggleTalkDetails"
         v-swipeleft.stop="toggleTalkStarred"
         v-bind:data-talk-id="talk.id">
         <div style="white-space:nowrap;overflow-x:hidden">
@@ -356,7 +356,7 @@
     &nbsp;|&nbsp;
     <a onclick="purgeOfflineData()">清理離線資料 🗑</a>
     <div style="margin-top:4pt;color:hsl(0, 0%, 80%);font-family:monospace;">
-      v20200730r2
+      v20200801r1
     </div>
   </div>
 </footer>
@@ -365,15 +365,19 @@
   Vue.directive('swipeleft', {
     bind: function(el, binding, vnode) {
       let startX, startPageTop, originLeft, starredYet;
-      el.addEventListener('touchstart', evt => {
+
+      const onSwipeStart = evt => {
         el.classList.add('swipe-x');
-        startX = evt.changedTouches[0].pageX;
+        startX = (evt.changedTouches && evt.changedTouches[0].pageX) || evt.pageX;
         startPageTop = window.scrollY;
         originLeft = el.style.left || null;
         starredYet = el.classList.contains('starred');
-      }, false);
-      el.addEventListener('touchmove', evt => {
-        const offsetX = (evt.changedTouches[0].pageX - startX);
+      };
+
+      const onSwipeMove = evt => {
+        if (!el.classList.contains('swipe-x')) return;
+        const eventX = (evt.changedTouches && evt.changedTouches[0].pageX) || evt.pageX;
+        const offsetX = (eventX - startX);
         const diffPageTop = Math.abs(window.scrollY - startPageTop);
         if (offsetX >= -40 || diffPageTop > 0) {
           el.style.left = '0';
@@ -385,17 +389,29 @@
         if (offsetX <= -80 && diffPageTop <= 0) {
           el.classList[starredYet ? 'remove' : 'add']('starred');
         }
-      });
-      el.addEventListener('touchend', evt => {
+      };
+
+      const onSwipeStop = evt => {
+        if (!el.classList.contains('swipe-x')) return;
         el.classList.remove('swipe-x');
         el.style.left = originLeft;
 
-        const offsetX = (evt.changedTouches[0].pageX - startX);
+        const eventX = (evt.changedTouches && evt.changedTouches[0].pageX) || evt.pageX;
+        const offsetX = (eventX - startX);
         const diffPageTop = Math.abs(window.scrollY - startPageTop);
         if (offsetX <= -80 && diffPageTop <= 60) {
           binding.value(evt);
         }
-      });
+      };
+
+      el.addEventListener('touchstart', onSwipeStart, false);
+      el.addEventListener('touchmove', onSwipeMove, false);
+      el.addEventListener('touchend', onSwipeStop, false);
+
+      el.addEventListener('mousedown', onSwipeStart, false);
+      el.addEventListener('mousemove', onSwipeMove, false);
+      el.addEventListener('mouseup', onSwipeStop, false);
+      el.addEventListener('mouseleave', onSwipeStop, false);
     },
   });
 
