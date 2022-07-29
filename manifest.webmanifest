@@ -1,9 +1,9 @@
 {
-  "name": "COSCUP 2020 下一場聽什麼？",
-  "short_name": "COSCUP 2020",
+  "name": "COSCUP 2022 下一場聽什麼？",
+  "short_name": "COSCUP 2022",
   "display": "standalone",
   "start_url": ".",
-  "theme_color": "#ff0000",
+  "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "icons": [
     {
